@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>会话聊天</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="">
+    <link rel="stylesheet" href="static/css/thread.css">
+</head>
+<body>
+<div id="app"></div>
+<template id="tpl">
+    <section>
+        <div class="ui-chat-box" v-if="isLogin">
+            <div class="ui-chat-left">
+                <div class="ui-top-userInfo">
+                    <div class="ui-userAvatar">
+                        <img :src="user.avatarUrl" alt="">
+                    </div>
+                    <div class="ui-userInfo">
+                        <h3>{{user.name}}</h3>
+                        <span class="ui-chatIcon-dropDwon" @click.stop="showMenu=!showMenu"></span>
+                        <transition name='custom-classes-transition' enter-active-class="animate scaleFadeIn"
+                                    leave-active-class="animate scaleFadeOut">
+                            <div class="drop-box" v-show="showMenu">
+                                <ul class="dropdown_menu">
+                                    <li>
+                                        <a  href="javascript:;"  title="消息音" >
+                                            <i class="ui-chatIcon-notice"></i>消息音
+                                        </a>
+                                    </li>
+                                    <li >
+                                        <a  href="javascript:;"  title="关于">
+                                            <i class="ui-chatIcon-link"></i>关于
+                                        </a>
+                                    </li>
+                                    <li @click="userLogin">
+                                        <a  href="javascript:;"  title="退出">
+                                            <i class="ui-chatIcon-logout"></i>退出
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </transition>
+                    </div>
+                </div>
+                <div class="ui-chatSearch">
+                    <span class="ui-chatIcon-search"></span>
+                    <input type="text" class="ui-chatInputSearch" v-model="keywords" placeholder="搜索">
+                </div>
+                <div class="ui-chatUsers ui-scroll">
+                    <ui-user :user="item" @change-channel="changeChannel" :channel="channel" :key="item.id" v-for="(item,index) in filterName()"></ui-user>
+                </div>
+            </div>
+            <div class="ui-chat-right">
+                <div class="ui-topInfo">{{channelUser.name}}</div>
+                <div class="ui-messageWarp ui-scroll" ref="list">
+                    <ui-message :message="item" :key="item.channel+index" v-for="(item,index) in messageList"></ui-message>
+                </div>
+                <div class="ui-toolBar">
+                    <ui-face @select-face="selectFace" class="ui-chatIcon-face"></ui-face>
+                </div>
+                <div class="ui-sendFrom">
+                    <textarea class="ui-chatInput" v-model="text" @keyup.enter="send"></textarea>
+                    <div class="ui-sendBox">
+                        <a class="ui-chatSendBtn" href="javascript:" @click="send">发送</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ui-login v-show="!isLogin" @user-login="userLogin"></ui-login>
+    </section>
+</template>
+<template id="message">
+    <div class="ui-thread-item" :class="{'ui-thread-right':message.type=='send'}">
+        <div class="ui-thread-avatar">
+            <img :src="message.user.avatarUrl" alt="">
+        </div>
+        <div class="ui-thread-content">
+            <div class="ui-thread-info" v-if="message.type=='send'"><span>{{message.time | time}}</span>{{message.user.name}}</div>
+            <div class="ui-thread-info" v-else>{{message.user.name}}<span>{{message.time | time}}</span></div>
+            <div class="ui-thread-body" v-html="filterText(message.text)"></div>
+        </div>
+    </div>
+</template>
+<template id="user">
+    <div class="ui-itemUser" :class="{active:user.id==channel}" @click="change(user.id)">
+        <span class="ui-chatBadge" v-if="user.unRead" v-show="user.unRead!=0">{{user.unRead}}</span>
+        <div class="ui-itemUser-avatar">
+            <img :src="user.avatarUrl" alt="" class="img">
+        </div>
+        <div class="ui-itemUser-info">
+            <h3 class="ui-itemUser-title"><span class="nickname_text">{{user.name}}</span></h3>
+            <div class="ui-itemUser-text" v-html="filterText(lastMsg)"></div>
+        </div>
+    </div>
+</template>
+<template id="login">
+    <div class="ui-login-box">
+        <div class="ui-login-banner">
+            <span class="ui-small"></span>
+        </div>
+        <div class="ui-login-form">
+            <div class="ui-login-group">
+                <div class="ui-avatar">
+                    <img :src="avatarUrl" alt="" @click.stop="isShow=!isShow">
+                    <transition name='custom-classes-transition' enter-active-class="animate scaleFadeIn"
+                                leave-active-class="animate scaleFadeOut">
+                        <div class="ui-selectAvatar" v-show="isShow">
+                            <div class="ui-avatarItem" v-for="item in imgList" :class="{active:item==avatarUrl}" @click="avatarUrl=item">
+                                <img :src="item" alt="" >
+                            </div>
+                        </div>
+                    </transition>
+                </div>
+                <div class="ui-form-element">
+                    <input type="text" class="ui-input" placeholder="用户名" v-model="name">
+                    <input type="text" class="ui-input" placeholder="密码">
+                    <button type="button" class="ui-loginBtn" @click="userLogin">登录</button>
+                </div>
+            </div>
+        </div>
+        <transition name='custom-classes-transition' enter-active-class="animate fadeIn"
+                    leave-active-class="animate fadeOut">
+            <div class="ui-chatError" v-show="errorMsg!=''">{{errorMsg}}</div>
+        </transition>
+    </div>
+</template>
+<script src="static/js/vue.min.2.2.0.js"></script>
+<script src="static/js/vue-resource.js"></script>
+<script src="static/js/vue-plugins.js"></script>
+<script>
+    var message=Vue.extend({
+        props: ['message'],
+        template:"#message",
+        filters:{
+            time:function (value) {
+                function two(str) {
+                    var s;
+                    s = "" + str;
+                    if (s.length === 1) {
+                        s = "0" + s;
+                    }
+                    return s;
+                };
+                var time=new Date(value);
+                var hour=time.getHours();
+                var m=time.getMinutes();
+                var s=time.getSeconds();
+                return two(hour)+":"+two(m)+":"+two(s);
+            }
+        },
+        methods:{
+            filterText:function (text) {
+                return this.$replaceFace(text)
+            }
+        }
+    })
+    var user=Vue.extend({
+        props: ['user',"channel"],
+        template:"#user",
+        computed:{
+            lastMsg:function () {
+                var str='';
+                var _this=this;
+                if(_this.user.messages&&_this.user.messages.length>0){
+                    str=_this.user.messages[_this.user.messages.length-1].text;
+                }
+                return str;
+            }
+        },
+        methods:{
+            change:function (id) {
+                this.$emit("change-channel",id)
+            },
+            filterText:function (text) {
+                return this.$replaceFace(text)
+            }
+        }
+    })
+    var login=Vue.extend({
+        template:"#login",
+        data:function () {
+            var images=[
+                'http://q.qlogo.cn/headimg_dl?dst_uin=705597001&spec=100',
+                'http://q.qlogo.cn/headimg_dl?dst_uin=956411241&spec=100',
+                'http://q.qlogo.cn/headimg_dl?dst_uin=1361514346&spec=100',
+                'http://q.qlogo.cn/headimg_dl?dst_uin=624748513&spec=100',
+                'http://q.qlogo.cn/headimg_dl?dst_uin=1741841217&spec=100',
+                'http://q.qlogo.cn/headimg_dl?dst_uin=157509895&spec=100',
+                'http://q.qlogo.cn/headimg_dl?dst_uin=453079985&spec=100',
+                'http://q.qlogo.cn/headimg_dl?dst_uin=753678776&spec=100',
+            ];
+            return {
+                avatarUrl:images[0],
+                imgList:images,
+                name:"",
+                isShow:false,
+                errorMsg:""
+            }
+        },
+        created:function () {
+            var _this=this;
+            document.addEventListener("click",function (e) {
+                _this.isShow=false;
+            })
+        },
+        methods:{
+            userLogin:function () {
+                this.name=this.name.replace(/(^\s*)|(\s*$)/g, "");
+                if(this.name!=""){
+                    this.$emit("user-login",this.avatarUrl)
+                }else {
+                    this.showError("请输入用户昵称！")
+                }
+            },
+            showError:function (err) {
+                var _this=this;
+                if(this.interval){
+                    clearTimeout(_this.interval)
+                }
+                this.errorMsg=err;
+                this.interval=setTimeout(function () {
+                    _this.errorMsg="";
+                },3000)
+            }
+        }
+    })
+    new Vue({
+        el:"#app",
+        template:"#tpl",
+        components:{
+            "ui-message":message,
+            "ui-user":user,
+            "ui-login":login
+        },
+        data:function () {
+            return {
+                user:{
+                    id:"705597001",
+                    name:"似水流年",
+                    avatarUrl:"static/images/img.jpg"
+                },
+                users:[{
+                    id:"group",
+                    name:"群聊天室",
+                    avatarUrl:"static/images/group-icon.png",
+                    messages:[]
+                },{
+                    id:"a1101",
+                    name:"熊本熊",
+                    avatarUrl:"static/images/10.jpg",
+                    messages:[]
+                }],
+                channel:"group",
+                text:"",
+                keywords:"",
+                showMenu:false,
+                isLogin:true
+            }
+        },
+        created:function () {
+            var _this=this;
+            document.addEventListener("click",function (e) {
+                _this.showMenu=false;
+            })
+            _this.initBg()
+        },
+        computed:{
+            messageList:function () {
+                var msgList=[];
+                var _this=this;
+                this.users.forEach(function (item) {
+                    if(item.id==_this.channel){
+                        msgList=item.messages?item.messages:[]
+                    }
+                })
+                return msgList
+            },
+            channelUser:function (){
+                var _this=this;
+                var user={};
+                this.users.forEach(function (item) {
+                    if(item.id==_this.channel){
+                        user={
+                            id:item.id,
+                            name:item.name,
+                            avatarUrl:item.avatarUrl
+                        };
+                    }
+                })
+                return user;
+            }
+        },
+        methods:{
+            sendMessage:function (channel,text,user,type) {
+                var _this=this;
+                var message={
+                    channel:channel,
+                    user:user,
+                    type:type,
+                    text:text,
+                    time:new Date().getTime()
+                };
+                this.users.forEach(function (item,index) {
+                    if(item.id==channel){
+                        if(!item.messages){
+                            _this.$set(_this.users[index],"messages",[])
+                        }
+                        if((type!='send'&&channel!=_this.channel)){
+                            if(_this.users[index].unRead){
+                                _this.users[index].unRead+=1;
+                            }else {
+                                _this.users[index].unRead=1;
+                            }
+
+                        }
+                        item.messages.push(message)
+                    }
+                })
+                this.$nextTick(function () {
+                    _this.scrollFooter();
+                })
+            },
+            send:function () {
+                this.text=this.text.replace(/(^\s*)|(\s*$)/g, "");
+                if(this.text!=''){
+                    this.sendMessage(this.channel,this.text,this.user,'send')
+                    this.getMessage(this.channel,this.text,this.channelUser)
+                    this.text="";
+                }
+            },
+            scrollFooter:function () {
+                var ul = this.$refs.list;
+                ul.scrollTop = ul.scrollHeight;
+            },
+            changeChannel:function (id) {
+                var _this=this;
+                this.channel=id;
+                this.$nextTick(function () {
+                    _this.scrollFooter();
+                })
+                _this.setMessageReader(id);
+            },
+            selectFace:function (text) {
+                this.text+=text.phrase;
+            },
+            getMessage:function (channel,text,user) {
+                var _this=this;
+                this.$http.get("http://www.tuling123.com/openapi/api",{params:{
+                    key:'a36d98ad2dfa44a487c74fefff41080c',
+                    info:text,
+                    userid:"123456"
+                }}).then(function (response) {
+                    var data=response.body;
+                    if(data.text){
+                        _this.sendMessage(channel,_this.filterData(data),user,"user")
+                    }
+                })
+            },
+            filterData:function (data) {
+                switch(data.code) {
+                    case 100000://文本类
+                        return data.text
+                        break;
+                    case 200000://链接类
+                        return data.text+"<a href='"+data.url+"' class='res-link' target='_blank'>打开页页面</a>"
+                        break;
+                    case 302000://新闻类
+                        var html=data.text+"<ul class='res-list'>";
+                        var len=3;
+                        if(data.list.length<3){
+                            len=data.list.length
+                        }
+                        for(var i=0;i<len;i++){
+                            var item=data.list[i];
+                            html+="<li><a href='"+item.detailurl+"' target='_blank'>"+(i+1)+".&nbsp;"+item.article+"</a></li>"
+                        }
+                        html+='</li>';
+                        return html;
+                        break;
+                    case 308000://菜谱类
+                        var html=data.text+"<ul class='res-list'>";
+                        var len=3;
+                        if(data.list.length<3){
+                            len=data.list.length
+                        }
+                        for(var i=0;i<len;i++){
+                            var item=data.list[i];
+                            html+="<li><a href='"+item.detailurl+"' target='_blank'>"+item.name+"</a></li>"
+                        }
+                        html+='</li>';
+                        return html;
+                        break;
+                    default:
+                        return data.text
+                }
+            },
+            filterName:function () {
+                var arr=[];
+                var self=this
+                this.users.forEach(function (item ){
+                    if(item.name.indexOf(self.keywords)!=-1){
+                        arr.push(item)
+                    }
+                })
+                return arr;
+            },
+            initBg:function () {
+                this.$http.jsonp("https://api.asilu.com/bg")
+                    .then(function (data) {
+                        var images=data.body.images;
+                        document.body.style.backgroundImage="url('static/images/a1 (10).jpg')";
+                        setInterval(function () {
+                            var index=parseInt(Math.random()*images.length);
+                            var img=new Image();
+                            img.addEventListener('load',function () {
+                                document.body.style.backgroundImage="url("+images[index].url+")";
+                            })
+                            img.src=images[index].url;
+                        },30000)
+                    })
+            },
+            userLogin:function (avatarUrl) {
+                this.user.avatarUrl=avatarUrl;
+                this.isLogin=!this.isLogin;
+            },
+            setMessageReader:function (id) {
+                var _this=this;
+                this.users.forEach(function (item,index) {
+                    if(item.id==id){
+                        _this.users[index].unRead=0
+                    }
+                })
+            }
+        }
+    })
+</script>
+</body>
+</html>
