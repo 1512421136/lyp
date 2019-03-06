@@ -1,0 +1,179 @@
+body{
+    min-width:360px
+}
+/* nav{
+    background-color:blue !important;
+} */
+.logo{
+    padding:100px 10px;
+    background-color: #020031;
+    background: linear-gradient(45deg,#020031 0,#6d3353 100%);
+    /* background:url(img/bj.png) repeat center center; */
+    text-align:center;
+    color:#fff;
+}
+
+.logo h1{
+    font-size:100px;
+    font-weight: 700;
+}
+.logo small{
+    font-size:30px;
+}
+@media screen and (max-width: 765px) {
+    .logo h1{
+        font-size:55px;
+    }
+    .logo small{
+        font-size:20px;
+    }
+}
+.logo div{
+    width:300px;
+    height:60px;
+    
+    background-color: #337ab7;
+    
+    margin:20px auto;
+    box-shadow: inset 0 -4px 0 #2a6496;
+    border-radius: 6px;
+    
+}
+.logo div:hover{
+    background-color:#2a6496;
+}
+.logo div a{
+    color:#fff;
+    line-height:60px;
+    font-size:18px;
+    cursor:pointer;
+    text-decoration: none;
+}
+.logo>a{
+    white-space:nowrap;
+    color:#fff;
+    opacity:.25;
+}
+.logo>a:hover{
+    color:#fff;
+    opacity: 1;
+}
+
+.social{
+    padding:15px 0 8px;
+    text-align: center;
+    margin:0 auto;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+}
+.social li{
+    display:inline-block;
+    margin:0 5px;
+}
+.social span{
+    color:#555;
+}
+.social .one a:hover{
+    color:#555;
+}
+.social .two a:hover{
+    color:#d9534f;
+}
+.social .two a span:hover{
+    color:#d9534f;
+}
+
+.tuijian{
+    /* 设置width=百分数，配合margin:0 auto实现块的缩小居中 */
+    width:60%;                       
+    margin:0 auto 10px;
+    font-weight:200;
+    text-align: center;
+    padding:50px 10px 10px;
+    border-bottom:1px solid #eee;
+}
+.tuijian h1{
+    font-size:42px;
+}
+.row{
+    margin-top:30px;
+}
+.xm .cont{
+    /* margin-left: auto;
+    margin-right: auto;
+    text-align: center; */
+    margin:0 auto;
+    max-width: 310px;
+    margin-bottom: 30px;
+    border: 1px solid #ddd;
+    padding:5px;
+}
+.xm img{
+    max-width: 100%;
+    height: auto;
+}
+.xm .intro{
+    padding:30px 10px 30px;
+    text-align:center;
+}
+.xm .intro a{
+    font-size:25px;
+    text-decoration:none;
+}
+.xm .intro a small{
+    font-size:16px;
+    color:#777;
+}
+
+.footer{
+    margin-top:70px;
+    border-top:1px solid #ddd;
+    padding:20px 100px;
+}
+.footer .fl p{
+    margin-top:10px;
+    color:#777;
+}
+.footer .fr{
+    /* display:block; */
+    min-width: 578px;
+}
+.footer .fr ul{
+    margin-right:80px;
+    float:left;
+}
+.footer .fr ul h3{
+    font-size:15px;
+    font-weight: 500;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.footer .fr ul li a{
+    color: #777;
+    text-decoration: none;
+}
+.footer .row{
+    padding-bottom:20px;
+    border-bottom:1px solid #ddd;
+}
+.footer .beian{
+    margin:20px 0;
+    text-align:center;
+    color:#777;
+}
+.footer .beian span{
+    white-space:nowrap;
+}
+.footer .beian a{
+    text-decoration:none;
+    color:#777;
+}
+#scrollUp{
+    width:50px;
+    height:50px;
+    text-align:center;
+    line-height:50px;
+    background-color:#777;
+    font-size:20px;
+    color:#fff;
+}
