@@ -1,0 +1,124 @@
+*{
+    margin:0;
+    padding:0;
+    list-style:none;
+    text-decoration:none;
+}
+input{
+    outline:none;
+}
+.wrapper{
+    width:100%;
+    height:650px;
+}
+.wrapper .daohangbox{
+    width:100%;
+    min-width:1000px;
+    height:35px;
+    /* background-color:#e0dada; */
+
+    border-bottom: 1px solid rgb(228, 227, 227);
+}
+.wrapper .daohangbox .daohang{
+    min-width:1000px;
+    height:35px;
+    margin:0 auto;
+}
+.wrapper .daohangbox .daohang-left{
+    float:left;
+}
+.wrapper .daohangbox .daohang-right{
+    float:right;
+}
+.wrapper .daohangbox ul li{
+    display:inline-block;
+    margin-left:10px;
+    line-height:35px;
+}
+.content{
+    width:100%
+}
+.logo img{
+    width:400px;
+    margin:0 33%;
+}
+.input{
+    width:800px;
+    height:33px;
+    /* border:1px solid black; */
+    margin:0 auto;
+    font-size:0;                               /* 设置这一步的目的是为了让框和按钮的空格去掉*/
+}
+.input .text{
+    width:680px;
+    height:30px;
+    border:1px solid rgb(53, 150, 230);
+    font-size:18px;
+    /* outline:none; */
+    text-indent:6px;
+}
+.input .submit{
+    height:32px;
+    width:100px;
+    
+    background-color:rgb(53, 150, 230);
+    border:none;
+    /* border-bottom:1px solid rgb(53, 150, 230); */
+    margin-top:2px;
+    outline:none;
+    color:white;
+    /* word-spacing:4px; */
+    cursor:pointer;
+    /* font-size:16px; */
+}
+.loginbox{
+    width:255px;
+    height:200px;
+    display:none;
+}
+.loginbox .text{
+    width:230px;
+    height:40px;
+    margin:10px 10px;
+    font-size:18px;
+    border:1px solid black
+}
+.loginbox .pwd{
+    width:230px;
+    height:40px;
+    margin:10px 10px;
+    font-size:18px;
+
+    border:1px solid black
+}
+.loginbox .btn{
+    width:230px;
+    height:40px;
+    margin:10px 10px;
+    text-align:center;
+    line-height:40px;
+    font-size:25px;
+    color:white;
+    letter-spacing:10px;
+    background-color:rgb(53, 150, 230);
+    cursor:pointer;
+}
+.loginbox .btn:hover{
+    background-color:rgb(11, 89, 206);
+}
+.footer{
+    margin-top:350px;
+    text-align:center;
+    font-size:12px;
+    color:#999
+}
+.footer .blo{
+    display:inline;
+}
+.footer a{
+    text-decoration:underline;
+    color:#999;
+}
+.footer p img{
+    width:15px;
+}
